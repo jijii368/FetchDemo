@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<table>
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Birthday</th>
+    </tr>
+    </thead>
+    <tbody id="tbody">
+
+    </tbody>
+    <form id="registerForm">
+        <input type="text" name="name">
+        <input type="date" name="dob">
+        <input type="file" name="file">
+        <input type="button" onclick="register()" value="register">
+    </form>
+</table>
+<script>
+    window.addEventListener('load',()=>{
+insertIntoTable()
+    })
+    async function insertIntoTable(){
+        let row =  ''
+        let data = await  fetch('/getAll',{
+            method : 'GET'
+        })
+        console.log(data.json())
+    }
+     async function  register() {
+        let data = new FormData(document.getElementById('registerForm'))
+        let response = await fetch('/register',{
+            method : 'POST',
+            body : data
+        })
+         console.log(response.json())
+    }
+    async function fetchData(url,method,headers,body) {
+        let data = await fetchData(url,{
+            method : method,
+            headers : headers,
+            body : JSON.stringify(body)
+        })
+        return data.json()
+    }
+</script>
+</body>
+</html>

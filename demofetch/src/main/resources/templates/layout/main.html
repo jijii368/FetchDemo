@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+              integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N"
+              crossorigin="anonymous">
+    </head>
+    <body>
+
+        <div class="container col-md-6 offset-md-3">
+            <form>
+                <div class="row">
+                    <div class="col">
+                        <input type="number" id="searchID" class="form-control" placeholder="id....">
+                    </div>
+                    <div class="col">
+                        <input type="text" id="searchName" class="form-control" placeholder="name...">
+                    </div>
+                    <button type="button" class="btn btn-outline-primary" onclick="search()">Search</button>
+                </div>
+            </form><br>
+            <form id="userForm" >
+                <span id="btn"></span>
+
+                <div class="input-group input-group-sm mb-3">
+                    <input type="text" class="form-control" name="name">
+                </div>
+
+                <div class="input-group mb-3">
+                    <input type="email" class="form-control" name="email">
+                </div>
+
+                <div class="input-group input-group-lg">
+                    <input type="password" class="form-control" name="password">
+                </div>
+
+                <div class="input-group input-group-lg">
+                    <input type="tel" class="form-control" name="phone">
+                </div>
+                <div class="input-group input-group-sm mb-3">
+                    <input type="file" class="form-control" name="file" id="photo">
+                </div>
+
+                <button type="submit" class="btn btn-outline-primary" id="submitButton">Create</button>
+            </form>
+            <table class="table mt-2" id="userTable">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Photo</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Password</th>
+                        <th scope="col">Phone</th>
+                        <th scope="col">DELETE</th>
+                        <th scope="col">UPDATE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+
+
+            <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <form>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" class="form-control" id="id" name="id">
+
+                            <div class="input-group input-group-sm mb-3">
+                                <input type="text" class="form-control" id="name" name="name">
+                            </div>
+
+                            <div class="input-group mb-3">
+                                <input type="email" class="form-control" id="email" name="email">
+                            </div>
+
+                            <div class="input-group input-group-lg">
+                                <input type="tel" class="form-control" id="phone" name="phone">
+                            </div>
+                            <div class="input-group input-group-lg">
+                                <input type="password" class="form-control" id="password" name="password">
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+        <script>
+
+            /*document.getElementById('submitButton').addEventListener('click',async (e) => {
+                e.preventDefault();
+                let formData = new FormData(document.getElementById('userForm'));
+                let user = Object.fromEntries(formData.entries());
+
+                const url = "/create";
+                const data = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(user)
+                });
+
+
+                if (data.ok) {
+                    const res = await data.json(); // Parse response as JSON
+                    await fetchData();
+                    document.getElementById('userForm').reset();
+                    document.getElementById('btn').innerHTML = res.message;
+                    console.log("Created Successfully");
+                } else {
+                    throw new Error("Error occurred");
+                }
+            });*/
+
+            document.getElementById('submitButton').addEventListener('click', async (e) => {
+                e.preventDefault();
+                let formData = new FormData(document.getElementById('userForm'));
+                let user = Object.fromEntries(formData.entries());
+
+                user.photo = document.getElementById('photo').files[0];
+
+                const url = "/create";
+                const data = await fetch(url, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (data.ok) {
+                    const res = await data.json();
+                    await fetchData();
+                    document.getElementById('userForm').reset();
+                    document.getElementById('btn').innerHTML = res.message;
+                    console.log("Created Successfully");
+                } else {
+                    throw new Error("Error occurred");
+                }
+            });
+
+            const fetchData = async () => {
+            const url1 ="/users";
+            const userList = await fetch(url1);
+            const data1 = await userList.json();
+            populatedTable(data1);
+        }
+
+            const populatedTable = (list) => {
+                const tableRow = document.querySelector('#userTable tbody');
+                tableRow.innerHTML = '';
+                list.forEach(list => {
+                    const row = tableRow.insertRow();
+                    row.insertCell().textContent = list.id;
+
+                    const photoCell = row.insertCell();
+                    if (list.photo) {
+                        const photoElement = document.createElement('img');
+                        photoElement.src = list.photo;
+                        photoElement.alt = "User Photo";
+                        photoElement.style.width = "100px";
+                        photoCell.appendChild(photoElement);
+                    }
+
+                    row.insertCell().textContent = list.name;
+                    row.insertCell().textContent = list.email;
+                    row.insertCell().textContent = list.password;
+                    row.insertCell().textContent = list.phone;
+
+
+                    const deleteButton = row.insertCell();
+                    deleteButton.innerHTML = `<button type="button" class="btn btn-outline-danger">DELETE</button>`;
+                    deleteButton.addEventListener('click',() =>deleteUser(list.id));
+
+                    const updateButton = row.insertCell();
+                    updateButton.innerHTML = `<button type="button" class="btn btn-outline-success" data-toggle="modal" data-target="#exampleModal" onclick="showdata('${list.id}','${list.name}','${list.email}','${list.phone}','${list.password}')">UPDATE</button>`;
+                });
+            }
+            fetchData().catch((err) => console.log('err',err));
+const deleteUser = async (id) => {
+    const url = `/delete/${id}`;
+    const cancelUser = await fetch(url,{
+        method:'DELETE'
+    });
+
+    if(!cancelUser.ok){
+alert('DELETE error');
+    }
+    await fetchData();
+
+}
+
+
+
+  document.querySelector('#exampleModal button.btn-primary').addEventListener('click',async () => {
+
+      const id=document.getElementById('id').value
+      const name=document.getElementById('name').value
+      const  email=document.getElementById('email').value
+      const phone=document.getElementById('phone').value
+      const password=document.getElementById('password').value
+
+
+      const updatedUser = {
+          id:id,
+          name:name,
+          email:email,
+          phone:phone,
+          password:password,
+
+      }
+
+
+          const url3 = "/update";
+          const updUser = await fetch(url3,{
+              method:'PUT',
+              headers:{
+                  'Content-Type':'application/json',
+              },
+              body:JSON.stringify(updatedUser)
+          });
+
+          if(updUser.ok){
+              $('#exampleModal').modal('hide');
+              await fetchData();
+          }
+
+  });
+
+
+
+const showdata  =(id,name,email,phone,password) => {
+    document.getElementById('id').value = id;
+    document.getElementById('name').value = name;
+    document.getElementById('email').value = email;
+    document.getElementById('phone').value = phone;
+    document.getElementById('password').value = password;
+}
+            // });
+
+  const search =  async () => {
+
+    const id = document.getElementById('searchID').value.trim();
+    const name = document.getElementById('searchName').value.trim();
+
+
+    let url4 = "/search?";
+
+    if(id){
+        url4 += `id=${id}`;
+    }
+
+    if(name){
+        if(id){
+            url4 += `&id=${id}`;
+        }
+        url4 += `name=${name}`;
+
+    }
+
+    const fetchData  = await fetch(url4);
+    const getData = await fetchData.json();
+
+    if(!fetchData.ok){
+        alert('Error occor');
+    }
+
+    populatedTable(getData);
+
+  }
+
+        </script>
+
+        <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+                integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+                crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
+                integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
+                crossorigin="anonymous"></script>
+    </body>
+</html>
